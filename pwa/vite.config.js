@@ -11,6 +11,9 @@ export default defineConfig({
     exclude: ["@sqlite.org/sqlite-wasm"],
   },
   build: {
+    // The service worker sends /assets/ to Rails, so the page's own files
+    // must not be there.
+    assetsDir: "static",
     rollupOptions: {
       input: {
         main: path.resolve(__dirname, 'index.html'),
