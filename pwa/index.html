@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Session Restore Demo</title>
+    <link rel="stylesheet" href="/src/demo.css" />
+  </head>
+  <body>
+    <main>
+      <header class="top">
+        <div>
+          <h1>Rails 8 authentication: a restored backup reissues session IDs</h1>
+          <p id="status" class="status">Starting service worker…</p>
+          <p id="notice" class="notice" hidden></p>
+        </div>
+        <button id="reset" disabled title="Start the whole demo over: new database, new backup, all browsers signed out">Reset demo</button>
+      </header>
+
+      <div class="layout">
+        <aside class="guide">
+          <h2>Try it</h2>
+          <ol id="steps" start="0">
+            <li data-step="0">
+              While the page loaded, <b>Carol</b> signed in (session
+              <span data-value="carol-id">1</span>), and then a <b>backup</b>
+              was taken (think: last night's backup). Nothing to do.
+            </li>
+            <li data-step="1">
+              In <b>Alice's browser</b>, sign in as
+              <code>alice@example.test</code> / <code>1234</code>.
+              She gets session <span data-value="next-id">2</span> and sees
+              her own note.
+            </li>
+            <li data-step="2">
+              Click <b>Restore backup</b>. The database goes back to step 0.
+              Alice's session is gone, and the highest session id is
+              <span data-value="backup-seq">1</span> again, so the next
+              sign-in gets <span data-value="next-id">2</span>.
+            </li>
+            <li data-step="3">
+              In <b>Bob's browser</b>, sign in as
+              <code>bob@example.test</code> / <code>4321</code>.
+              He gets session <span data-value="next-id">2</span>, the number
+              in Alice's cookie.
+            </li>
+            <li data-step="4">
+              Click <b>Reload</b> in Alice's browser.
+              <b>Expected:</b> she is signed out, because her session is gone.
+            </li>
+          </ol>
+          <p id="result" class="result" hidden></p>
+          <p class="why">
+            The generated code stores the session's integer primary key in a
+            signed cookie and looks it up with
+            <code>Session.find_by(id: cookies.signed[:session_id])</code>.
+            The signature proves the number came from this app. It does not
+            prove that it is the same session row.
+          </p>
+          <details class="how">
+            <summary>How this demo works</summary>
+            <ul>
+              <li>
+                The generated authentication code is unchanged, in a small
+                Rails 8.1 app (users, notes, and a page that shows who you are
+                signed in as).
+              </li>
+              <li>
+                Everything runs in your browser: Ruby on WebAssembly
+                (wasmify-rails) and SQLite (sqlite-wasm) in memory. A service
+                worker handles the requests.
+              </li>
+              <li>
+                The three panels are emulated browsers. Each has its own cookie
+                jar in the service worker; your browser's own cookies are not
+                used. They share one client IP, so the generated sign-in rate
+                limit (10 attempts in 3 minutes) is shared too.
+              </li>
+              <li>
+                Carol signs in automatically, through the normal sign-in form,
+                before the backup.
+              </li>
+              <li>
+                The backup is a full snapshot of the SQLite database
+                (<code>sqlite3_serialize</code>). Restore stops Rails, replaces
+                the database with the snapshot (<code>sqlite3_deserialize</code>),
+                and starts Rails again. There is no WAL here.
+              </li>
+              <li>
+                <code>secret_key_base</code> is random for this page and the
+                same before and after the restore, as in production. Only Rails
+                creates cookies, at sign-in; nothing here edits or forges them.
+              </li>
+              <li>
+                The result is shown only when Rails itself answers Alice's
+                unchanged cookie with a different user after the last restore.
+              </li>
+              <li>
+                <b>Reset demo</b> (top right) starts over from step 0.
+              </li>
+            </ul>
+          </details>
+        </aside>
+
+        <div class="stage">
+          <section class="browsers">
+            <div class="browser">
+              <header>Alice's browser <button data-reload="alice">Reload</button></header>
+              <div class="address mono" id="address-alice"></div>
+              <iframe id="frame-alice" title="Alice's browser"></iframe>
+              <div class="cookie mono" id="cookie-alice"></div>
+            </div>
+            <div class="browser">
+              <header>Bob's browser <button data-reload="bob">Reload</button></header>
+              <div class="address mono" id="address-bob"></div>
+              <iframe id="frame-bob" title="Bob's browser"></iframe>
+              <div class="cookie mono" id="cookie-bob"></div>
+            </div>
+            <div class="browser">
+              <header>Carol's browser <button data-reload="carol">Reload</button></header>
+              <div class="address mono" id="address-carol"></div>
+              <iframe id="frame-carol" title="Carol's browser"></iframe>
+              <div class="cookie mono" id="cookie-carol"></div>
+            </div>
+          </section>
+
+          <section class="server">
+            <header>
+              Server
+              <button id="restore" disabled>Restore backup</button>
+            </header>
+            <p id="backup" class="mono"></p>
+            <table>
+              <thead><tr><th>sessions.id</th><th>user_id</th><th>email</th><th>in backup</th></tr></thead>
+              <tbody id="sessions"></tbody>
+            </table>
+            <details>
+              <summary>Server log</summary>
+              <pre id="events" class="mono"></pre>
+            </details>
+          </section>
+        </div>
+      </div>
+    </main>
+    <script type="module" src="/src/demo.js"></script>
+  </body>
+</html>

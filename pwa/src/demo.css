@@ -1,0 +1,37 @@
+body { margin: 0; font: 14px/1.45 system-ui, sans-serif; background: #f5f5f3; color: #1d1d1f; }
+main { max-width: 1400px; margin: 0 auto; padding: 16px; }
+h1 { font-size: 18px; margin: 0 0 4px; }
+h2 { font-size: 15px; margin: 0 0 8px; }
+code, .mono { font-family: ui-monospace, Menlo, monospace; font-size: 12px; }
+.status { color: #555; margin: 0; }
+.top { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 12px; }
+
+.layout { display: grid; grid-template-columns: 300px 1fr; gap: 12px; align-items: start; }
+.guide, .browser, .server { background: #fff; border: 1px solid #ddd; border-radius: 6px; padding: 10px; }
+.guide ol { padding-left: 20px; margin: 0 0 10px; }
+.guide li { padding: 6px 8px; margin: 0 0 6px -8px; border-radius: 4px; color: #777; }
+.guide li.active { background: #fff4d6; color: #1d1d1f; outline: 1px solid #f0d58a; }
+.guide li.done { color: #1d1d1f; }
+.guide li.done::marker { content: "✓ "; color: #2e7d32; }
+.result { background: #fde8e8; border: 1px solid #f3b4b4; border-radius: 4px; padding: 8px; margin: 0 0 10px; }
+.why { color: #555; font-size: 13px; margin: 0 0 8px; }
+
+.browsers { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.browser header, .server header { display: flex; justify-content: space-between; align-items: center; font-weight: 600; margin-bottom: 6px; }
+.address { background: #eee; padding: 4px 6px; border-radius: 4px; margin-bottom: 6px; }
+iframe { width: 100%; height: 220px; border: 1px solid #ddd; background: #fff; }
+.cookie { margin-top: 6px; word-break: break-all; color: #444; }
+.server { margin-top: 12px; }
+table { border-collapse: collapse; margin: 6px 0; }
+td, th { border: 1px solid #ddd; padding: 3px 8px; text-align: left; }
+pre { max-height: 200px; overflow: auto; background: #fafafa; padding: 6px; margin: 6px 0 0; }
+
+@media (max-width: 900px) {
+  .layout, .browsers { grid-template-columns: 1fr; }
+}
+.notice { background: #fff4d6; border: 1px solid #f0d58a; border-radius: 4px; padding: 6px 8px; margin: 6px 0 0; }
+.cookie { white-space: pre-wrap; }
+.how { font-size: 13px; color: #444; }
+.how summary { cursor: pointer; font-weight: 600; margin-bottom: 4px; }
+.how ul { padding-left: 18px; margin: 4px 0 0; }
+.how li { margin-bottom: 4px; }
